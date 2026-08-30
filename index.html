@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ジャグラー小役カウンター＆設定判別</title>
+    <title>ジャグラー詳細カウンター＆設定判別</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -16,7 +16,7 @@
             --reg-color: #2196f3;
             --danger-color: #cf6679;
             --border-radius: 12px;
-            --highlight-color: rgba(187, 134, 252, 0.2);
+            --highlight-color: rgba(187, 134, 252, 0.25);
             --highlight-border: #bb86fc;
         }
 
@@ -25,7 +25,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 16px;
+            padding: 12px;
             display: flex;
             justify-content: center;
             min-height: 100vh;
@@ -33,10 +33,10 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
         header {
@@ -44,11 +44,11 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #333;
-            padding-bottom: 12px;
+            padding-bottom: 8px;
         }
 
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin: 0;
             font-weight: 600;
         }
@@ -57,15 +57,10 @@
             background-color: transparent;
             color: var(--danger-color);
             border: 1px solid var(--danger-color);
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s;
-        }
-
-        .reset-btn:active {
-            background-color: rgba(207, 102, 121, 0.2);
+            font-size: 0.85rem;
         }
 
         .card {
@@ -77,89 +72,64 @@
 
         .machine-select {
             width: 100%;
-            padding: 12px;
+            padding: 8px;
             background-color: #2c2c2c;
             color: white;
             border: 1px solid #444;
             border-radius: 8px;
             font-size: 1rem;
-            margin-bottom: 16px;
             outline: none;
-        }
-        .machine-select:focus {
-            border-color: var(--primary-color);
-        }
-
-        .games-section label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            color: #aaa;
-        }
-
-        .games-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .games-input {
-            flex-grow: 1;
             background-color: #2c2c2c;
             border: 1px solid #444;
             color: white;
-            font-size: 1.5rem;
-            padding: 10px;
+            font-size: 1.4rem;
+            padding: 8px;
             border-radius: 8px;
             text-align: right;
-        }
-
-        .games-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
         }
 
         .counters-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
         }
 
         .counter-card {
             display: flex;
             flex-direction: column;
-            align-items: center;
             background-color: #2a2a2a;
             border-radius: var(--border-radius);
             padding: 12px;
         }
 
-        .counter-name {
-            font-size: 1rem;
-            font-weight: bold;
+        .counter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
         }
 
-        .grape { color: #ce93d8; }
-        .cherry { color: #ef9a9a; }
-        .big { color: #f48fb1; }
-        .reg { color: #90caf9; }
+        .counter-name {
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
 
         .counter-value {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            margin: 8px 0;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
-            width: 100%;
+            gap: 8px;
         }
 
         .btn {
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
@@ -175,77 +145,57 @@
             transform: scale(0.95);
         }
 
-        .btn-plus {
-            flex-grow: 1;
-            padding: 12px;
-            background-color: #4caf50;
-        }
-
-        .btn-minus {
-            width: 40px;
-            background-color: #757575;
-        }
+        .btn-plus { flex-grow: 1; padding: 10px; }
+        .btn-minus { width: 40px; background-color: #616161; font-size: 1.2rem; }
         
-        .grape-bg { background-color: var(--grape-color); }
-        .cherry-bg { background-color: var(--cherry-color); }
-        .big-bg { background-color: var(--big-color); }
-        .reg-bg { background-color: var(--reg-color); }
+        .grape { color: #ce93d8; }
+        .cherry { color: #ef9a9a; }
+        .big { color: #f48fb1; }
+        .reg { color: #90caf9; }
+        
+        .bg-grape { background-color: var(--grape-color); }
+        .bg-cherry { background-color: var(--cherry-color); }
+        .bg-big { background-color: var(--big-color); }
+        .bg-reg { background-color: var(--reg-color); }
 
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .stat-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             background-color: #2a2a2a;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .stat-item.total {
+            grid-column: span 2;
+            background-color: #333;
         }
 
-        .stat-label {
-            color: #aaa;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            font-family: monospace;
-            font-size: 1.1rem;
-        }
+        .stat-label { color: #aaa; }
+        .stat-value { font-weight: bold; font-family: monospace; }
 
         .estimation-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             text-align: center;
         }
-
         .estimation-table th, .estimation-table td {
-            padding: 8px 4px;
+            padding: 6px 2px;
             border: 1px solid #444;
         }
-
-        .estimation-table th {
-            background-color: #2c2c2c;
-            color: #aaa;
-        }
-
+        .estimation-table th { background-color: #2c2c2c; color: #aaa; }
         .estimation-table tr.highlight {
             background-color: var(--highlight-color);
             border: 2px solid var(--highlight-border);
             font-weight: bold;
-        }
-        
-        .section-title {
-            font-size: 1rem;
-            margin-top: 0;
-            margin-bottom: 12px;
-            color: #aaa;
         }
     </style>
 </head>
@@ -253,14 +203,14 @@
 
 <div class="container">
     <header>
-        <h1>ジャグラー小役カウンター</h1>
-        <button class="reset-btn" onclick="resetAll()">リセット</button>
+        <h1>ジャグラー詳細カウンター</h1>
+        <button class="reset-btn" onclick="resetAll()">全リセット</button>
     </header>
 
-    <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+    <div class="card" style="display: flex; flex-direction: column; gap: 12px;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="machineSelect" style="font-size: 0.95rem; font-weight: bold; margin: 0; white-space: nowrap; margin-right: 16px;">機種選択</label>
-            <select id="machineSelect" class="machine-select" style="margin-bottom: 0; flex-grow: 1; max-width: 250px;" onchange="changeMachine()">
+            <label for="machineSelect" style="font-size: 0.9rem; font-weight: bold; margin: 0;">機種</label>
+            <select id="machineSelect" class="machine-select" style="flex-grow: 1; max-width: 75%;" onchange="changeMachine()">
                 <option value="my_juggler_v">マイジャグラーV</option>
                 <option value="im_juggler_ex">アイムジャグラーEX</option>
                 <option value="funky_juggler_2">ファンキージャグラー2</option>
@@ -270,64 +220,90 @@
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="totalGames" style="font-size: 0.95rem; font-weight: bold; margin: 0; white-space: nowrap; margin-right: 16px;">総ゲーム数</label>
-            <div class="games-input-wrapper" style="flex-grow: 1; justify-content: flex-end;">
-                <input type="number" id="totalGames" class="games-input" value="0" min="0" style="width: 80px;" onchange="updateStats(); saveData()" oninput="updateStats()">
-                <span style="font-size: 1.2rem;">G</span>
-                <button class="btn" style="background-color: #4caf50; font-size: 1rem; padding: 10px 12px; border-radius: 8px; margin-left: 8px;" onclick="addGames(100)">+100</button>
+            <label for="totalGames" style="font-size: 0.9rem; font-weight: bold; margin: 0;">総ゲーム</label>
+            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
+                <input type="number" id="totalGames" class="games-input" value="0" min="0" style="width: 90px;" onchange="updateStats(); saveData()" oninput="updateStats()">
+                <span style="font-size: 1.1rem;">G</span>
+                <button class="btn bg-grape" style="font-size: 0.9rem; padding: 10px; border-radius: 6px;" onclick="addGames(100)">+100</button>
             </div>
         </div>
     </div>
 
     <div class="counters-grid">
         <div class="counter-card">
-            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 8px;">
-                <div class="counter-name grape" style="margin-bottom: 0;">ぶどう</div>
-                <div class="counter-value" id="val-grape" style="margin: 0;">0</div>
+            <div class="counter-header grape">
+                <span class="counter-name">ぶどう</span>
+                <span class="counter-value" id="val-grape">0</span>
             </div>
             <div class="controls">
                 <button class="btn btn-minus" onclick="changeCount('grape', -1)">-</button>
-                <button class="btn btn-plus grape-bg" onclick="changeCount('grape', 1)">+</button>
+                <button class="btn btn-plus bg-grape" onclick="changeCount('grape', 1)">+</button>
             </div>
         </div>
 
         <div class="counter-card">
-            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 8px;">
-                <div class="counter-name cherry" style="margin-bottom: 0;">チェリー</div>
-                <div class="counter-value" id="val-cherry" style="margin: 0;">0</div>
+            <div class="counter-header cherry">
+                <span class="counter-name">角チェリー<span style="font-size:0.7rem; color:#aaa">(非重複)</span></span>
+                <span class="counter-value" id="val-cherry">0</span>
             </div>
             <div class="controls">
                 <button class="btn btn-minus" onclick="changeCount('cherry', -1)">-</button>
-                <button class="btn btn-plus cherry-bg" onclick="changeCount('cherry', 1)">+</button>
+                <button class="btn btn-plus bg-cherry" onclick="changeCount('cherry', 1)">+</button>
             </div>
         </div>
 
         <div class="counter-card">
-            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 8px;">
-                <div class="counter-name big" style="margin-bottom: 0;">BIG</div>
-                <div class="counter-value" id="val-big" style="margin: 0;">0</div>
+            <div class="counter-header big">
+                <span class="counter-name">単独BIG</span>
+                <span class="counter-value" id="val-solo_big">0</span>
             </div>
             <div class="controls">
-                <button class="btn btn-minus" onclick="changeCount('big', -1)">-</button>
-                <button class="btn btn-plus big-bg" onclick="changeCount('big', 1)">+</button>
+                <button class="btn btn-minus" onclick="changeCount('solo_big', -1)">-</button>
+                <button class="btn btn-plus bg-big" onclick="changeCount('solo_big', 1)">+</button>
             </div>
         </div>
 
         <div class="counter-card">
-            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 8px;">
-                <div class="counter-name reg" style="margin-bottom: 0;">REG</div>
-                <div class="counter-value" id="val-reg" style="margin: 0;">0</div>
+            <div class="counter-header big">
+                <span class="counter-name">チェリーBIG</span>
+                <span class="counter-value" id="val-cherry_big">0</span>
             </div>
             <div class="controls">
-                <button class="btn btn-minus" onclick="changeCount('reg', -1)">-</button>
-                <button class="btn btn-plus reg-bg" onclick="changeCount('reg', 1)">+</button>
+                <button class="btn btn-minus" onclick="changeCount('cherry_big', -1)">-</button>
+                <button class="btn btn-plus bg-big" onclick="changeCount('cherry_big', 1)">+</button>
+            </div>
+        </div>
+
+        <div class="counter-card">
+            <div class="counter-header reg">
+                <span class="counter-name">単独REG</span>
+                <span class="counter-value" id="val-solo_reg">0</span>
+            </div>
+            <div class="controls">
+                <button class="btn btn-minus" onclick="changeCount('solo_reg', -1)">-</button>
+                <button class="btn btn-plus bg-reg" onclick="changeCount('solo_reg', 1)">+</button>
+            </div>
+        </div>
+
+        <div class="counter-card">
+            <div class="counter-header reg">
+                <span class="counter-name">チェリーREG</span>
+                <span class="counter-value" id="val-cherry_reg">0</span>
+            </div>
+            <div class="controls">
+                <button class="btn btn-minus" onclick="changeCount('cherry_reg', -1)">-</button>
+                <button class="btn btn-plus bg-reg" onclick="changeCount('cherry_reg', 1)">+</button>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h2 class="section-title">確率一覧＆設定判別</h2>
+        <h2 style="font-size: 1rem; margin-top: 0; color: #aaa;">現在確率</h2>
         <div class="stats-grid">
+            <div class="stat-item total">
+                <span class="stat-label">ボーナス合算</span>
+                <span class="stat-value" id="stat-total">1/0.0</span>
+            </div>
             <div class="stat-item">
                 <span class="stat-label">ぶどう</span>
                 <span class="stat-value" id="stat-grape">1/0.0</span>
@@ -337,111 +313,117 @@
                 <span class="stat-value" id="stat-cherry">1/0.0</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">BIG</span>
-                <span class="stat-value" id="stat-big">1/0.0</span>
+                <span class="stat-label">単独BIG</span>
+                <span class="stat-value" id="stat-solo_big">1/0.0</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">REG</span>
-                <span class="stat-value" id="stat-reg">1/0.0</span>
+                <span class="stat-label">単独REG</span>
+                <span class="stat-value" id="stat-solo_reg">1/0.0</span>
             </div>
-            <div class="stat-item" style="grid-column: span 2;">
-                <span class="stat-label">ボーナス合算</span>
-                <span class="stat-value" id="stat-total-bonus">1/0.0</span>
+            <div class="stat-item">
+                <span class="stat-label">チェリーBIG</span>
+                <span class="stat-value" id="stat-cherry_big">1/0.0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">チェリーREG</span>
+                <span class="stat-value" id="stat-cherry_reg">1/0.0</span>
             </div>
         </div>
 
-        <h3 style="font-size: 0.9rem; margin-top: 0; color: #aaa;">設定目安表 (色付きが現在値に最も近い設定)</h3>
+        <h3 style="font-size: 0.85rem; margin-top: 16px; color: #aaa;">設定推測表 <span style="font-size: 0.7rem;">(単独REG・ぶどうを重視)</span></h3>
         <table class="estimation-table">
             <thead>
                 <tr>
-                    <th>設定</th>
+                    <th>設</th>
                     <th>合算</th>
-                    <th>BIG</th>
-                    <th>REG</th>
+                    <th>単独R</th>
+                    <th>チェR</th>
+                    <th>単独B</th>
                     <th>ぶどう</th>
                 </tr>
             </thead>
             <tbody id="estimation-tbody">
-                <!-- Dynamically populated -->
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // Machine Data (Target probabilities denominator)
+    // Detailed probabilities (denominator)
     const machines = {
         my_juggler_v: [
-            { setting: 1, total: 163.8, big: 273.1, reg: 409.6, grape: 5.93 },
-            { setting: 2, total: 159.1, big: 270.8, reg: 385.5, grape: 5.93 },
-            { setting: 3, total: 148.6, big: 266.4, reg: 336.1, grape: 5.93 },
-            { setting: 4, total: 135.4, big: 254.0, reg: 290.0, grape: 5.93 },
-            { setting: 5, total: 126.6, big: 240.1, reg: 268.6, grape: 5.76 },
-            { setting: 6, total: 114.6, big: 229.1, reg: 229.1, grape: 5.66 }
+            { setting: 1, total: 163.8, solo_reg: 546, cherry_reg: 1638, solo_big: 385, grape: 5.93 },
+            { setting: 2, total: 159.1, solo_reg: 512, cherry_reg: 1560, solo_big: 372, grape: 5.93 },
+            { setting: 3, total: 148.6, solo_reg: 436, cherry_reg: 1489, solo_big: 356, grape: 5.93 },
+            { setting: 4, total: 135.4, solo_reg: 390, cherry_reg: 1129, solo_big: 341, grape: 5.93 },
+            { setting: 5, total: 126.6, solo_reg: 356, cherry_reg: 1092, solo_big: 327, grape: 5.76 },
+            { setting: 6, total: 114.6, solo_reg: 327, cherry_reg: 771,  solo_big: 307, grape: 5.66 }
         ],
         im_juggler_ex: [
-            { setting: 1, total: 168.5, big: 273.1, reg: 439.8, grape: 6.02 },
-            { setting: 2, total: 161.0, big: 269.7, reg: 399.6, grape: 6.02 },
-            { setting: 3, total: 151.7, big: 269.7, reg: 346.8, grape: 6.02 },
-            { setting: 4, total: 142.2, big: 259.0, reg: 315.1, grape: 6.02 },
-            { setting: 5, total: 127.5, big: 259.0, reg: 255.0, grape: 6.02 },
-            { setting: 6, total: 127.5, big: 255.0, reg: 255.0, grape: 5.78 }
+            { setting: 1, total: 168.5, solo_reg: 627, cherry_reg: 1489, solo_big: 385, grape: 6.02 },
+            { setting: 2, total: 161.0, solo_reg: 546, cherry_reg: 1489, solo_big: 385, grape: 6.02 },
+            { setting: 3, total: 151.7, solo_reg: 496, cherry_reg: 1149, solo_big: 385, grape: 6.02 },
+            { setting: 4, total: 142.2, solo_reg: 431, cherry_reg: 1170, solo_big: 368, grape: 6.02 },
+            { setting: 5, total: 127.5, solo_reg: 366, cherry_reg: 830,  solo_big: 368, grape: 6.02 },
+            { setting: 6, total: 127.5, solo_reg: 366, cherry_reg: 830,  solo_big: 352, grape: 5.78 }
         ],
         funky_juggler_2: [
-            { setting: 1, total: 165.9, big: 266.4, reg: 439.8, grape: 6.00 },
-            { setting: 2, total: 158.3, big: 259.0, reg: 407.1, grape: 5.90 },
-            { setting: 3, total: 150.7, big: 256.0, reg: 366.1, grape: 5.90 },
-            { setting: 4, total: 140.3, big: 249.2, reg: 322.8, grape: 5.80 },
-            { setting: 5, total: 133.3, big: 240.9, reg: 299.3, grape: 5.80 },
-            { setting: 6, total: 119.6, big: 219.9, reg: 262.1, grape: 5.75 }
+            { setting: 1, total: 165.9, solo_reg: 630, cherry_reg: 1456, solo_big: 385, grape: 6.00 },
+            { setting: 2, total: 158.3, solo_reg: 585, cherry_reg: 1337, solo_big: 372, grape: 5.90 },
+            { setting: 3, total: 150.7, solo_reg: 504, cherry_reg: 1337, solo_big: 364, grape: 5.90 },
+            { setting: 4, total: 140.3, solo_reg: 425, cherry_reg: 1337, solo_big: 348, grape: 5.80 },
+            { setting: 5, total: 133.3, solo_reg: 399, cherry_reg: 1191, solo_big: 334, grape: 5.80 },
+            { setting: 6, total: 119.6, solo_reg: 356, cherry_reg: 992,  solo_big: 304, grape: 5.75 }
         ],
         gogo_juggler_3: [
-            { setting: 1, total: 158.8, big: 264.3, reg: 397.2, grape: 6.20 },
-            { setting: 2, total: 154.6, big: 260.1, reg: 381.0, grape: 6.20 },
-            { setting: 3, total: 147.3, big: 256.0, reg: 346.8, grape: 6.20 },
-            { setting: 4, total: 138.9, big: 249.2, reg: 315.1, grape: 6.10 },
-            { setting: 5, total: 128.0, big: 238.3, reg: 276.5, grape: 6.00 },
-            { setting: 6, total: 115.4, big: 230.8, reg: 230.8, grape: 5.90 }
+            { setting: 1, total: 158.8, solo_reg: 528, cherry_reg: 1598, solo_big: 364, grape: 6.20 },
+            { setting: 2, total: 154.6, solo_reg: 504, cherry_reg: 1560, solo_big: 356, grape: 6.20 },
+            { setting: 3, total: 147.3, solo_reg: 442, cherry_reg: 1560, solo_big: 348, grape: 6.20 },
+            { setting: 4, total: 138.9, solo_reg: 409, cherry_reg: 1365, solo_big: 334, grape: 6.10 },
+            { setting: 5, total: 128.0, solo_reg: 341, cherry_reg: 1456, solo_big: 318, grape: 6.00 },
+            { setting: 6, total: 115.4, solo_reg: 297, cherry_reg: 1024, solo_big: 318, grape: 5.90 }
         ],
         happy_juggler_v3: [
-            { setting: 1, total: 161.8, big: 273.1, reg: 397.2, grape: 6.05 },
-            { setting: 2, total: 154.9, big: 270.8, reg: 362.1, grape: 6.04 },
-            { setting: 3, total: 146.9, big: 263.2, reg: 332.7, grape: 6.02 },
-            { setting: 4, total: 137.7, big: 254.0, reg: 300.6, grape: 5.90 },
-            { setting: 5, total: 127.5, big: 239.2, reg: 273.1, grape: 5.81 },
-            { setting: 6, total: 120.0, big: 226.0, reg: 256.0, grape: 5.75 }
+            { setting: 1, total: 161.8, solo_reg: 585, cherry_reg: 1236, solo_big: 409, grape: 6.05 },
+            { setting: 2, total: 154.9, solo_reg: 528, cherry_reg: 1149, solo_big: 404, grape: 6.04 },
+            { setting: 3, total: 146.9, solo_reg: 474, cherry_reg: 1110, solo_big: 390, grape: 6.02 },
+            { setting: 4, total: 137.7, solo_reg: 420, cherry_reg: 1057, solo_big: 372, grape: 5.90 },
+            { setting: 5, total: 127.5, solo_reg: 372, cherry_reg: 1024, solo_big: 356, grape: 5.81 },
+            { setting: 6, total: 120.0, individual: true, solo_reg: 356, cherry_reg: 910, solo_big: 327, grape: 5.75 }
         ]
     };
 
-    let counts = { grape: 0, cherry: 0, big: 0, reg: 0 };
+    let counts = { grape: 0, cherry: 0, solo_big: 0, cherry_big: 0, solo_reg: 0, cherry_reg: 0 };
 
     function loadData() {
-        const savedCounts = localStorage.getItem('juggler_counts');
+        const savedCounts = localStorage.getItem('juggler_detailed_counts');
         const savedGames = localStorage.getItem('juggler_games');
         const savedMachine = localStorage.getItem('juggler_machine');
         
-        if (savedMachine) {
-            document.getElementById('machineSelect').value = savedMachine;
-        }
+        if (savedMachine) document.getElementById('machineSelect').value = savedMachine;
+        if (savedGames) document.getElementById('totalGames').value = savedGames;
 
         if (savedCounts) {
-            counts = JSON.parse(savedCounts);
-            document.getElementById('val-grape').innerText = counts.grape;
-            document.getElementById('val-cherry').innerText = counts.cherry;
-            document.getElementById('val-big').innerText = counts.big;
-            document.getElementById('val-reg').innerText = counts.reg;
+            try {
+                const parsed = JSON.parse(savedCounts);
+                if(parsed.solo_reg !== undefined) {
+                    counts = parsed;
+                }
+            } catch(e) {}
         }
         
-        if (savedGames) {
-            document.getElementById('totalGames').value = savedGames;
-        }
+        Object.keys(counts).forEach(key => {
+            if(document.getElementById(`val-${key}`)) {
+                document.getElementById(`val-${key}`).innerText = counts[key];
+            }
+        });
         
         renderEstimationTable();
         updateStats();
     }
 
     function saveData() {
-        localStorage.setItem('juggler_counts', JSON.stringify(counts));
+        localStorage.setItem('juggler_detailed_counts', JSON.stringify(counts));
         localStorage.setItem('juggler_games', document.getElementById('totalGames').value);
         localStorage.setItem('juggler_machine', document.getElementById('machineSelect').value);
     }
@@ -451,7 +433,6 @@
         if (counts[type] < 0) counts[type] = 0;
         
         document.getElementById(`val-${type}`).innerText = counts[type];
-        
         saveData();
         updateStats();
     }
@@ -467,7 +448,7 @@
     function changeMachine() {
         saveData();
         renderEstimationTable();
-        updateStats(); // to re-calculate highlighting
+        updateStats();
     }
 
     function renderEstimationTable() {
@@ -482,8 +463,9 @@
             tr.innerHTML = `
                 <td>${d.setting}</td>
                 <td>1/${d.total.toFixed(1)}</td>
-                <td>1/${d.big.toFixed(1)}</td>
-                <td>1/${d.reg.toFixed(1)}</td>
+                <td>1/${d.solo_reg}</td>
+                <td>1/${d.cherry_reg}</td>
+                <td>1/${d.solo_big}</td>
                 <td>1/${d.grape.toFixed(2)}</td>
             `;
             tbody.appendChild(tr);
@@ -492,28 +474,23 @@
 
     function updateStats() {
         const games = parseInt(document.getElementById('totalGames').value) || 0;
-        
-        const currentRatios = { grape: 0, big: 0, reg: 0, total: 0 };
+        const currentRatios = { grape: 0, solo_reg: 0, cherry_reg: 0, total: 0 };
 
         const updateRatio = (type) => {
             const el = document.getElementById(`stat-${type}`);
             if (counts[type] > 0) {
                 const ratio = games / counts[type];
-                currentRatios[type] = ratio;
-                el.innerText = `1/${ratio.toFixed(2)}`;
+                if (currentRatios[type] !== undefined) currentRatios[type] = ratio;
+                el.innerText = `1/${ratio.toFixed(1)}`;
             } else {
-                el.innerText = '1/0.00';
+                el.innerText = '1/0.0';
             }
         };
 
-        updateRatio('grape');
-        updateRatio('cherry');
-        updateRatio('big');
-        updateRatio('reg');
+        ['grape', 'cherry', 'solo_big', 'cherry_big', 'solo_reg', 'cherry_reg'].forEach(updateRatio);
 
-        // Total bonus
-        const totalBonus = counts.big + counts.reg;
-        const totalBonusEl = document.getElementById('stat-total-bonus');
+        const totalBonus = counts.solo_big + counts.cherry_big + counts.solo_reg + counts.cherry_reg;
+        const totalBonusEl = document.getElementById('stat-total');
         if (totalBonus > 0) {
             const ratio = games / totalBonus;
             currentRatios.total = ratio;
@@ -522,7 +499,6 @@
             totalBonusEl.innerText = '1/0.0';
         }
 
-        // Highlight closest setting
         highlightClosestSetting(currentRatios, games);
     }
 
@@ -530,26 +506,24 @@
         const machineKey = document.getElementById('machineSelect').value;
         const data = machines[machineKey];
         
-        // Remove existing highlights
         data.forEach(d => {
             document.getElementById(`row-setting-${d.setting}`).classList.remove('highlight');
         });
 
-        // Need reasonable game count to estimate (e.g. > 500)
-        if (games < 100 || ratios.reg === 0) return;
+        // Highlight works if there's enough data (e.g. at least 1 solo reg)
+        if (games < 100 || ratios.solo_reg === 0) return;
 
-        // Simple estimation logic: Find setting with minimum combined distance
-        // We'll weigh REG heavily, and Grape slightly. Total is also somewhat indicative.
         let closestSetting = 1;
         let minDistance = Infinity;
 
         data.forEach(d => {
-            // Distance metric: percentage difference squared
-            const regDist = Math.pow((ratios.reg - d.reg) / d.reg, 2) * 2; // Weight REG x2
-            const grapeDist = ratios.grape > 0 ? Math.pow((ratios.grape - d.grape) / d.grape, 2) * 1.5 : 0; // Weight Grape x1.5
-            const totalDist = Math.pow((ratios.total - d.total) / d.total, 2); 
+            // Distance weighting: Solo REG is king, Grape is secondary
+            const soloRegDist = Math.pow((ratios.solo_reg - d.solo_reg) / d.solo_reg, 2) * 3.0;
+            const grapeDist = ratios.grape > 0 ? Math.pow((ratios.grape - d.grape) / d.grape, 2) * 1.5 : 0;
+            const cherryRegDist = ratios.cherry_reg > 0 ? Math.pow((ratios.cherry_reg - d.cherry_reg) / d.cherry_reg, 2) * 0.5 : 0;
+            const totalDist = Math.pow((ratios.total - d.total) / d.total, 2) * 0.5; 
             
-            const totalDistance = regDist + grapeDist + totalDist;
+            const totalDistance = soloRegDist + grapeDist + cherryRegDist + totalDist;
             
             if (totalDistance < minDistance) {
                 minDistance = totalDistance;
@@ -557,21 +531,15 @@
             }
         });
 
-        // Add highlight
         document.getElementById(`row-setting-${closestSetting}`).classList.add('highlight');
     }
 
     function resetAll() {
         if (confirm("全てのデータをリセットしますか？")) {
-            counts = { grape: 0, cherry: 0, big: 0, reg: 0 };
-            document.getElementById('val-grape').innerText = 0;
-            document.getElementById('val-cherry').innerText = 0;
-            document.getElementById('val-big').innerText = 0;
-            document.getElementById('val-reg').innerText = 0;
+            counts = { grape: 0, cherry: 0, solo_big: 0, cherry_big: 0, solo_reg: 0, cherry_reg: 0 };
             document.getElementById('totalGames').value = 0;
-            
             saveData();
-            updateStats();
+            loadData(); // Re-render everything
         }
     }
 
