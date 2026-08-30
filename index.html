@@ -304,6 +304,14 @@
                 <span class="stat-label">ボーナス合算</span>
                 <span class="stat-value" id="stat-total">1/0.0</span>
             </div>
+            <div class="stat-item" style="background-color: rgba(233, 30, 99, 0.15); border: 1px solid rgba(233, 30, 99, 0.3);">
+                <span class="stat-label">BIG合算</span>
+                <span class="stat-value" id="stat-total_big" style="color: #f48fb1;">1/0.0</span>
+            </div>
+            <div class="stat-item" style="background-color: rgba(33, 150, 243, 0.15); border: 1px solid rgba(33, 150, 243, 0.3);">
+                <span class="stat-label">REG合算</span>
+                <span class="stat-value" id="stat-total_reg" style="color: #90caf9;">1/0.0</span>
+            </div>
             <div class="stat-item">
                 <span class="stat-label">ぶどう</span>
                 <span class="stat-value" id="stat-grape">1/0.0</span>
@@ -497,6 +505,20 @@
             totalBonusEl.innerText = `1/${ratio.toFixed(1)}`;
         } else {
             totalBonusEl.innerText = '1/0.0';
+        }
+
+        const totalBig = counts.solo_big + counts.cherry_big;
+        if (totalBig > 0) {
+            document.getElementById('stat-total_big').innerText = `1/${(games / totalBig).toFixed(1)}`;
+        } else {
+            document.getElementById('stat-total_big').innerText = '1/0.0';
+        }
+
+        const totalReg = counts.solo_reg + counts.cherry_reg;
+        if (totalReg > 0) {
+            document.getElementById('stat-total_reg').innerText = `1/${(games / totalReg).toFixed(1)}`;
+        } else {
+            document.getElementById('stat-total_reg').innerText = '1/0.0';
         }
 
         highlightClosestSetting(currentRatios, games);
