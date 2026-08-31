@@ -221,6 +221,14 @@
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="startGames" style="font-size: 0.9rem; font-weight: bold; margin: 0;">開始ゲーム</label>
+            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
+                <input type="number" id="startGames" class="games-input" value="0" min="0" style="width: 90px;" onchange="updateStats(); saveData()" oninput="updateStats()">
+                <span style="font-size: 1.1rem;">G</span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
             <label for="totalGames" style="font-size: 0.9rem; font-weight: bold; margin: 0;">総ゲーム</label>
             <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
                 <input type="number" id="totalGames" class="games-input" value="0" min="0" style="width: 90px;" onchange="updateStats(); saveData()" oninput="updateStats()">
@@ -407,10 +415,12 @@
     function loadData() {
         const savedCounts = localStorage.getItem('juggler_detailed_counts');
         const savedGames = localStorage.getItem('juggler_games');
+        const savedStartGames = localStorage.getItem('juggler_start_games');
         const savedMachine = localStorage.getItem('juggler_machine');
         
         if (savedMachine) document.getElementById('machineSelect').value = savedMachine;
         if (savedGames) document.getElementById('totalGames').value = savedGames;
+        if (savedStartGames) document.getElementById('startGames').value = savedStartGames;
 
         if (savedCounts) {
             try {
@@ -434,6 +444,7 @@
     function saveData() {
         localStorage.setItem('juggler_detailed_counts', JSON.stringify(counts));
         localStorage.setItem('juggler_games', document.getElementById('totalGames').value);
+        localStorage.setItem('juggler_start_games', document.getElementById('startGames').value);
         localStorage.setItem('juggler_machine', document.getElementById('machineSelect').value);
     }
 
@@ -482,13 +493,18 @@
     }
 
     function updateStats() {
-        const games = parseInt(document.getElementById('totalGames').value) || 0;
+        const totalGames = parseInt(document.getElementById('totalGames').value) || 0;
+        const startGames = parseInt(document.getElementById('startGames').value) || 0;
+        const myGames = Math.max(0, totalGames - startGames);
+
         const currentRatios = { grape: 0, solo_reg: 0, cherry_reg: 0, total: 0 };
 
         const updateRatio = (type) => {
             const el = document.getElementById(`stat-${type}`);
+            const gamesToUse = (type === 'grape' || type === 'cherry') ? myGames : totalGames;
+
             if (counts[type] > 0) {
-                const ratio = games / counts[type];
+                const ratio = gamesToUse / counts[type];
                 if (currentRatios[type] !== undefined) currentRatios[type] = ratio;
                 el.innerText = `1/${ratio.toFixed(1)}`;
             } else {
@@ -501,7 +517,7 @@
         const totalBonus = counts.solo_big + counts.cherry_big + counts.solo_reg + counts.cherry_reg;
         const totalBonusEl = document.getElementById('stat-total');
         if (totalBonus > 0) {
-            const ratio = games / totalBonus;
+            const ratio = totalGames / totalBonus;
             currentRatios.total = ratio;
             totalBonusEl.innerText = `1/${ratio.toFixed(1)}`;
         } else {
@@ -510,19 +526,19 @@
 
         const totalBig = counts.solo_big + counts.cherry_big;
         if (totalBig > 0) {
-            document.getElementById('stat-total_big').innerText = `1/${(games / totalBig).toFixed(1)}`;
+            document.getElementById('stat-total_big').innerText = `1/${(totalGames / totalBig).toFixed(1)}`;
         } else {
             document.getElementById('stat-total_big').innerText = '1/0.0';
         }
 
         const totalReg = counts.solo_reg + counts.cherry_reg;
         if (totalReg > 0) {
-            document.getElementById('stat-total_reg').innerText = `1/${(games / totalReg).toFixed(1)}`;
+            document.getElementById('stat-total_reg').innerText = `1/${(totalGames / totalReg).toFixed(1)}`;
         } else {
             document.getElementById('stat-total_reg').innerText = '1/0.0';
         }
 
-        highlightClosestSetting(currentRatios, games);
+        highlightClosestSetting(currentRatios, totalGames);
     }
 
     function highlightClosestSetting(ratios, games) {
@@ -561,6 +577,7 @@
         if (confirm("全てのデータをリセットしますか？")) {
             counts = { grape: 0, cherry: 0, solo_big: 0, cherry_big: 0, solo_reg: 0, cherry_reg: 0 };
             document.getElementById('totalGames').value = 0;
+            document.getElementById('startGames').value = 0;
             saveData();
             loadData(); // Re-render everything
         }
