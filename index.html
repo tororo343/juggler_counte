@@ -357,16 +357,15 @@
             </div>
         </div>
 
-        <h3 style="font-size: 0.85rem; margin-top: 16px; color: #aaa;">設定推測表 <span style="font-size: 0.7rem;">(単独REG・ぶどうを重視)</span></h3>
+        <h3 style="font-size: 0.85rem; margin-top: 16px; color: #aaa;">設定推測表 <span style="font-size: 0.7rem;">(ベイズ推定による期待度)</span></h3>
         <table class="estimation-table">
             <thead>
                 <tr>
-                    <th>設</th>
-                    <th>合算</th>
-                    <th>単独R</th>
-                    <th>チェR</th>
-                    <th>単独B</th>
-                    <th>ぶどう</th>
+                    <th style="width: 10%">設</th>
+                    <th style="width: 25%">合算</th>
+                    <th style="width: 25%">単独R</th>
+                    <th style="width: 25%">ぶどう</th>
+                    <th style="width: 15%; min-width: 60px;">期待度</th>
                 </tr>
             </thead>
             <tbody id="estimation-tbody">
@@ -451,8 +450,7 @@
             }
         });
         
-        renderEstimationTable();
-        updateStats();
+        updateStats(); // This handles rendering the table for the first time
     }
 
     function saveData() {
@@ -483,30 +481,113 @@
     
     function changeMachine() {
         saveData();
-        renderEstimationTable();
-        updateStats();
+        updateStats(); // This will automatically trigger renderEstimationTable because machineKey changed
     }
+
+    let lastRenderedMachine = null;
+    let lastRenderedHasStartReg = null;
+    let lastRenderedHasStartBig = null;
 
     function renderEstimationTable() {
         const machineKey = document.getElementById('machineSelect').value;
+        const startReg = parseInt(document.getElementById('startReg').value) || 0;
+        const startBig = parseInt(document.getElementById('startBig').value) || 0;
+        const hasStartReg = startReg > 0;
         const data = machines[machineKey];
+        
+        const thead = document.querySelector('.estimation-table thead');
         const tbody = document.getElementById('estimation-tbody');
+        
+        let cols = [];
+
+        if (hasStartReg || startBig > 0) {
+            cols.push({ label: '合算', key: 'total' });
+            if (machineKey === 'funky_juggler_2') {
+                cols.push({ label: '合成R', key: 'total_reg' });
+                cols.push({ label: '合BIG', key: 'total_big' });
+                cols.push({ label: 'ぶどう', key: 'grape' });
+            } else if (machineKey === 'gogo_juggler_3') {
+                cols.push({ label: 'ぶどう', key: 'grape' });
+                cols.push({ label: '合成R', key: 'total_reg' });
+                cols.push({ label: '合BIG', key: 'total_big' });
+            } else {
+                cols.push({ label: '合成R', key: 'total_reg' });
+                cols.push({ label: 'ぶどう', key: 'grape' });
+                cols.push({ label: '合BIG', key: 'total_big' });
+            }
+        } else {
+            const baseCols = {
+                solo_reg: { label: '単独R', key: 'solo_reg' },
+                cherry_reg: { label: 'チェR', key: 'cherry_reg' },
+                solo_big: { label: '単独B', key: 'solo_big' },
+                cherry_big: { label: 'チェB', key: 'cherry_big' },
+                grape: { label: 'ぶどう', key: 'grape' }
+            };
+            
+            if (machineKey === 'funky_juggler_2') {
+                cols.push(baseCols.solo_reg, baseCols.solo_big, baseCols.grape, baseCols.cherry_reg, baseCols.cherry_big);
+            } else if (machineKey === 'happy_juggler_v3') {
+                cols.push(baseCols.solo_reg, baseCols.cherry_reg, baseCols.grape, baseCols.solo_big, baseCols.cherry_big);
+            } else if (machineKey === 'gogo_juggler_3') {
+                cols.push(baseCols.grape, baseCols.solo_reg, baseCols.solo_big, baseCols.cherry_reg, baseCols.cherry_big);
+            } else {
+                cols.push(baseCols.solo_reg, baseCols.grape, baseCols.cherry_reg, baseCols.solo_big, baseCols.cherry_big);
+            }
+        }
+
+        let thHtml = `<th style="width: 10%">設</th>`;
+        cols.forEach(col => {
+            thHtml += `<th>${col.label}</th>`;
+        });
+        thHtml += `<th style="width: 15%; min-width: 60px;">期待度</th>`;
+
+        thead.innerHTML = `<tr>${thHtml}</tr>`;
+
         tbody.innerHTML = '';
 
         data.forEach(d => {
             const tr = document.createElement('tr');
             tr.id = `row-setting-${d.setting}`;
-            tr.innerHTML = `
-                <td>${d.setting}</td>
-                <td>1/${d.total.toFixed(1)}</td>
-                <td>1/${d.solo_reg}</td>
-                <td>1/${d.cherry_reg}</td>
-                <td>1/${d.solo_big}</td>
-                <td>1/${d.grape.toFixed(2)}</td>
+            
+            const getVal = (col) => {
+                const p_total_reg = (1 / d.solo_reg) + (1 / d.cherry_reg);
+                const p_big = (1 / d.total) - p_total_reg;
+
+                if (col.key === 'total_reg') {
+                    return `1/${(1 / p_total_reg).toFixed(0)}`;
+                }
+                if (col.key === 'total_big') {
+                    return `1/${(1 / p_big).toFixed(0)}`;
+                }
+                if (col.key === 'cherry_big') {
+                    const p_cherry_big = Math.max(1e-9, p_big - (1 / d.solo_big));
+                    return `1/${(1 / p_cherry_big).toFixed(0)}`;
+                }
+                if (col.key === 'grape') {
+                    return `1/${d.grape.toFixed(2)}`;
+                }
+                if (col.key === 'total') {
+                    return `1/${d.total.toFixed(1)}`;
+                }
+                return `1/${d[col.key]}`;
+            };
+
+            let tdHtml = `<td>${d.setting}</td>`;
+            cols.forEach(col => {
+                tdHtml += `<td>${getVal(col)}</td>`;
+            });
+            tdHtml += `
+                <td id="prob-setting-${d.setting}" style="position:relative; text-align:left; padding-left:8px;">
+                    <div id="bar-setting-${d.setting}" style="position:absolute; top:0; left:0; height:100%; width:0%; background-color:rgba(76, 175, 80, 0.3); z-index:0; transition: width 0.3s ease;"></div>
+                    <span id="text-setting-${d.setting}" style="position:relative; z-index:1; font-weight:bold;">0.0%</span>
+                </td>
             `;
+            tr.innerHTML = tdHtml;
             tbody.appendChild(tr);
         });
     }
+
+
 
     function updateStats() {
         const totalGames = parseInt(document.getElementById('totalGames').value) || 0;
@@ -514,6 +595,16 @@
         const startBig = parseInt(document.getElementById('startBig').value) || 0;
         const startReg = parseInt(document.getElementById('startReg').value) || 0;
         const myGames = Math.max(0, totalGames - startGames);
+        const machineKey = document.getElementById('machineSelect').value;
+        const hasStartReg = startReg > 0;
+        const hasStartBig = startBig > 0;
+
+        if (lastRenderedMachine !== machineKey || lastRenderedHasStartReg !== hasStartReg || lastRenderedHasStartBig !== hasStartBig) {
+            renderEstimationTable();
+            lastRenderedMachine = machineKey;
+            lastRenderedHasStartReg = hasStartReg;
+            lastRenderedHasStartBig = hasStartBig;
+        }
 
         const currentRatios = { grape: 0, solo_reg: 0, cherry_reg: 0, total: 0 };
 
@@ -565,57 +656,80 @@
         
         data.forEach(d => {
             document.getElementById(`row-setting-${d.setting}`).classList.remove('highlight');
+            document.getElementById(`bar-setting-${d.setting}`).style.width = '0%';
+            document.getElementById(`text-setting-${d.setting}`).innerText = '-';
         });
 
-        // Highlight works if there's enough data
-        if (games < 100 || (ratios.solo_reg === 0 && startReg === 0)) return;
+        const totalGames = parseInt(document.getElementById('totalGames').value) || 0;
+        const startGames = parseInt(document.getElementById('startGames').value) || 0;
+        const myGames = Math.max(0, totalGames - startGames);
+        
+        if (totalGames === 0) return;
 
-        const getMachineWeights = (key) => {
-            let w = { soloReg: 3.0, totalReg: 3.5, grape: 1.5, cherryReg: 0.5, total: 0.5 };
-            switch(key) {
-                case 'my_juggler_v':
-                    w.soloReg = 3.5; w.totalReg = 4.0; w.grape = 2.0; break;
-                case 'im_juggler_ex':
-                    w.soloReg = 4.0; w.totalReg = 4.5; w.grape = 1.0; w.total = 0.5; break;
-                case 'funky_juggler_2':
-                    w.soloReg = 3.0; w.totalReg = 3.5; w.grape = 1.0; w.total = 1.5; break;
-                case 'gogo_juggler_3':
-                    w.soloReg = 2.5; w.totalReg = 3.0; w.grape = 0.5; w.total = 2.0; break;
-                case 'happy_juggler_v3':
-                    w.soloReg = 3.0; w.totalReg = 3.5; w.cherryReg = 1.5; w.grape = 1.5; break;
-            }
-            return w;
-        };
+        const startBig = parseInt(document.getElementById('startBig').value) || 0;
+        const totalBig = counts.solo_big + counts.cherry_big + startBig;
 
-        const weights = getMachineWeights(machineKey);
-        let closestSetting = 1;
-        let minDistance = Infinity;
+        function calcLogLikelihood(n, k, p) {
+            if (n === 0 || p <= 0 || p >= 1) return 0;
+            if (k > n) return -Infinity; // Impossible event safety
+            return k * Math.log(p) + (n - k) * Math.log(1 - p);
+        }
 
-        data.forEach(d => {
-            const grapeDist = ratios.grape > 0 ? Math.pow((ratios.grape - d.grape) / d.grape, 2) * weights.grape : 0;
-            const totalDist = Math.pow((ratios.total - d.total) / d.total, 2) * weights.total; 
-            
-            let regDist = 0;
-            if (startReg > 0) {
-                // We don't know the breakdown, so use Total REG probability
-                const expectedTotalReg = 1 / ((1 / d.solo_reg) + (1 / d.cherry_reg));
-                const totalRegRatio = totalReg > 0 ? games / totalReg : 0;
-                regDist = totalRegRatio > 0 ? Math.pow((totalRegRatio - expectedTotalReg) / expectedTotalReg, 2) * weights.totalReg : 0;
+        let likelihoods = data.map(d => {
+            let ll = 0;
+
+            // 1. Grape (from myGames)
+            ll += calcLogLikelihood(myGames, counts.grape, 1 / d.grape);
+
+            const p_total_reg = (1 / d.solo_reg) + (1 / d.cherry_reg);
+            const p_big = (1 / d.total) - p_total_reg;
+
+            // 2. BIG
+            if (startBig > 0) {
+                ll += calcLogLikelihood(totalGames, totalBig, p_big);
             } else {
-                const soloRegDist = Math.pow((ratios.solo_reg - d.solo_reg) / d.solo_reg, 2) * weights.soloReg;
-                const cherryRegDist = ratios.cherry_reg > 0 ? Math.pow((ratios.cherry_reg - d.cherry_reg) / d.cherry_reg, 2) * weights.cherryReg : 0;
-                regDist = soloRegDist + cherryRegDist;
+                const p_solo_big = 1 / d.solo_big;
+                const p_cherry_big = Math.max(1e-9, p_big - p_solo_big);
+                ll += calcLogLikelihood(totalGames, counts.solo_big, p_solo_big);
+                ll += calcLogLikelihood(totalGames, counts.cherry_big, p_cherry_big);
             }
+
+            // 3. REG
+            if (startReg > 0) {
+                ll += calcLogLikelihood(totalGames, totalReg, p_total_reg);
+            } else {
+                ll += calcLogLikelihood(totalGames, counts.solo_reg, 1 / d.solo_reg);
+                ll += calcLogLikelihood(totalGames, counts.cherry_reg, 1 / d.cherry_reg);
+            }
+
+            return { setting: d.setting, ll: ll };
+        });
+
+        // Softmax
+        const maxLL = Math.max(...likelihoods.map(l => l.ll));
+        let sumExp = 0;
+        likelihoods.forEach(l => {
+            l.expLL = Math.exp(l.ll - maxLL);
+            sumExp += l.expLL;
+        });
+
+        let maxProb = 0;
+        let bestSetting = 1;
+
+        likelihoods.forEach(l => {
+            const prob = (l.expLL / sumExp) * 100;
+            document.getElementById(`text-setting-${l.setting}`).innerText = `${prob.toFixed(1)}%`;
+            document.getElementById(`bar-setting-${l.setting}`).style.width = `${prob.toFixed(1)}%`;
             
-            const totalDistance = regDist + grapeDist + totalDist;
-            
-            if (totalDistance < minDistance) {
-                minDistance = totalDistance;
-                closestSetting = d.setting;
+            if (prob > maxProb) {
+                maxProb = prob;
+                bestSetting = l.setting;
             }
         });
 
-        document.getElementById(`row-setting-${closestSetting}`).classList.add('highlight');
+        if (totalGames > 100) {
+            document.getElementById(`row-setting-${bestSetting}`).classList.add('highlight');
+        }
     }
 
     function resetAll() {
