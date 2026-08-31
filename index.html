@@ -229,6 +229,16 @@
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size: 0.9rem; font-weight: bold; margin: 0;">開始ボーナス</label>
+            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
+                <span style="font-size: 0.8rem;">BIG</span>
+                <input type="number" id="startBig" class="games-input" value="0" min="0" style="width: 50px;" onchange="updateStats(); saveData()" oninput="updateStats()">
+                <span style="font-size: 0.8rem; margin-left: 5px;">REG</span>
+                <input type="number" id="startReg" class="games-input" value="0" min="0" style="width: 50px;" onchange="updateStats(); saveData()" oninput="updateStats()">
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
             <label for="totalGames" style="font-size: 0.9rem; font-weight: bold; margin: 0;">総ゲーム</label>
             <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
                 <input type="number" id="totalGames" class="games-input" value="0" min="0" style="width: 90px;" onchange="updateStats(); saveData()" oninput="updateStats()">
@@ -416,11 +426,15 @@
         const savedCounts = localStorage.getItem('juggler_detailed_counts');
         const savedGames = localStorage.getItem('juggler_games');
         const savedStartGames = localStorage.getItem('juggler_start_games');
+        const savedStartBig = localStorage.getItem('juggler_start_big');
+        const savedStartReg = localStorage.getItem('juggler_start_reg');
         const savedMachine = localStorage.getItem('juggler_machine');
         
         if (savedMachine) document.getElementById('machineSelect').value = savedMachine;
         if (savedGames) document.getElementById('totalGames').value = savedGames;
         if (savedStartGames) document.getElementById('startGames').value = savedStartGames;
+        if (savedStartBig) document.getElementById('startBig').value = savedStartBig;
+        if (savedStartReg) document.getElementById('startReg').value = savedStartReg;
 
         if (savedCounts) {
             try {
@@ -445,6 +459,8 @@
         localStorage.setItem('juggler_detailed_counts', JSON.stringify(counts));
         localStorage.setItem('juggler_games', document.getElementById('totalGames').value);
         localStorage.setItem('juggler_start_games', document.getElementById('startGames').value);
+        localStorage.setItem('juggler_start_big', document.getElementById('startBig').value);
+        localStorage.setItem('juggler_start_reg', document.getElementById('startReg').value);
         localStorage.setItem('juggler_machine', document.getElementById('machineSelect').value);
     }
 
@@ -495,6 +511,8 @@
     function updateStats() {
         const totalGames = parseInt(document.getElementById('totalGames').value) || 0;
         const startGames = parseInt(document.getElementById('startGames').value) || 0;
+        const startBig = parseInt(document.getElementById('startBig').value) || 0;
+        const startReg = parseInt(document.getElementById('startReg').value) || 0;
         const myGames = Math.max(0, totalGames - startGames);
 
         const currentRatios = { grape: 0, solo_reg: 0, cherry_reg: 0, total: 0 };
@@ -514,7 +532,7 @@
 
         ['grape', 'cherry', 'solo_big', 'cherry_big', 'solo_reg', 'cherry_reg'].forEach(updateRatio);
 
-        const totalBonus = counts.solo_big + counts.cherry_big + counts.solo_reg + counts.cherry_reg;
+        const totalBonus = counts.solo_big + counts.cherry_big + counts.solo_reg + counts.cherry_reg + startBig + startReg;
         const totalBonusEl = document.getElementById('stat-total');
         if (totalBonus > 0) {
             const ratio = totalGames / totalBonus;
@@ -524,24 +542,24 @@
             totalBonusEl.innerText = '1/0.0';
         }
 
-        const totalBig = counts.solo_big + counts.cherry_big;
+        const totalBig = counts.solo_big + counts.cherry_big + startBig;
         if (totalBig > 0) {
             document.getElementById('stat-total_big').innerText = `1/${(totalGames / totalBig).toFixed(1)}`;
         } else {
             document.getElementById('stat-total_big').innerText = '1/0.0';
         }
 
-        const totalReg = counts.solo_reg + counts.cherry_reg;
+        const totalReg = counts.solo_reg + counts.cherry_reg + startReg;
         if (totalReg > 0) {
             document.getElementById('stat-total_reg').innerText = `1/${(totalGames / totalReg).toFixed(1)}`;
         } else {
             document.getElementById('stat-total_reg').innerText = '1/0.0';
         }
 
-        highlightClosestSetting(currentRatios, totalGames);
+        highlightClosestSetting(currentRatios, totalGames, startReg, totalReg);
     }
 
-    function highlightClosestSetting(ratios, games) {
+    function highlightClosestSetting(ratios, games, startReg, totalReg) {
         const machineKey = document.getElementById('machineSelect').value;
         const data = machines[machineKey];
         
@@ -549,20 +567,47 @@
             document.getElementById(`row-setting-${d.setting}`).classList.remove('highlight');
         });
 
-        // Highlight works if there's enough data (e.g. at least 1 solo reg)
-        if (games < 100 || ratios.solo_reg === 0) return;
+        // Highlight works if there's enough data
+        if (games < 100 || (ratios.solo_reg === 0 && startReg === 0)) return;
 
+        const getMachineWeights = (key) => {
+            let w = { soloReg: 3.0, totalReg: 3.5, grape: 1.5, cherryReg: 0.5, total: 0.5 };
+            switch(key) {
+                case 'my_juggler_v':
+                    w.soloReg = 3.5; w.totalReg = 4.0; w.grape = 2.0; break;
+                case 'im_juggler_ex':
+                    w.soloReg = 4.0; w.totalReg = 4.5; w.grape = 1.0; w.total = 0.5; break;
+                case 'funky_juggler_2':
+                    w.soloReg = 3.0; w.totalReg = 3.5; w.grape = 1.0; w.total = 1.5; break;
+                case 'gogo_juggler_3':
+                    w.soloReg = 2.5; w.totalReg = 3.0; w.grape = 0.5; w.total = 2.0; break;
+                case 'happy_juggler_v3':
+                    w.soloReg = 3.0; w.totalReg = 3.5; w.cherryReg = 1.5; w.grape = 1.5; break;
+            }
+            return w;
+        };
+
+        const weights = getMachineWeights(machineKey);
         let closestSetting = 1;
         let minDistance = Infinity;
 
         data.forEach(d => {
-            // Distance weighting: Solo REG is king, Grape is secondary
-            const soloRegDist = Math.pow((ratios.solo_reg - d.solo_reg) / d.solo_reg, 2) * 3.0;
-            const grapeDist = ratios.grape > 0 ? Math.pow((ratios.grape - d.grape) / d.grape, 2) * 1.5 : 0;
-            const cherryRegDist = ratios.cherry_reg > 0 ? Math.pow((ratios.cherry_reg - d.cherry_reg) / d.cherry_reg, 2) * 0.5 : 0;
-            const totalDist = Math.pow((ratios.total - d.total) / d.total, 2) * 0.5; 
+            const grapeDist = ratios.grape > 0 ? Math.pow((ratios.grape - d.grape) / d.grape, 2) * weights.grape : 0;
+            const totalDist = Math.pow((ratios.total - d.total) / d.total, 2) * weights.total; 
             
-            const totalDistance = soloRegDist + grapeDist + cherryRegDist + totalDist;
+            let regDist = 0;
+            if (startReg > 0) {
+                // We don't know the breakdown, so use Total REG probability
+                const expectedTotalReg = 1 / ((1 / d.solo_reg) + (1 / d.cherry_reg));
+                const totalRegRatio = totalReg > 0 ? games / totalReg : 0;
+                regDist = totalRegRatio > 0 ? Math.pow((totalRegRatio - expectedTotalReg) / expectedTotalReg, 2) * weights.totalReg : 0;
+            } else {
+                const soloRegDist = Math.pow((ratios.solo_reg - d.solo_reg) / d.solo_reg, 2) * weights.soloReg;
+                const cherryRegDist = ratios.cherry_reg > 0 ? Math.pow((ratios.cherry_reg - d.cherry_reg) / d.cherry_reg, 2) * weights.cherryReg : 0;
+                regDist = soloRegDist + cherryRegDist;
+            }
+            
+            const totalDistance = regDist + grapeDist + totalDist;
             
             if (totalDistance < minDistance) {
                 minDistance = totalDistance;
@@ -578,6 +623,8 @@
             counts = { grape: 0, cherry: 0, solo_big: 0, cherry_big: 0, solo_reg: 0, cherry_reg: 0 };
             document.getElementById('totalGames').value = 0;
             document.getElementById('startGames').value = 0;
+            document.getElementById('startBig').value = 0;
+            document.getElementById('startReg').value = 0;
             saveData();
             loadData(); // Re-render everything
         }
